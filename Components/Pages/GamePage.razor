@@ -1,0 +1,77 @@
+﻿@page "/GamePage"
+@rendermode InteractiveServer
+@using DeckShuffle.Components.Modles
+<h3>GamePage</h3>
+
+@code {
+    Shuffle shuffle = new Shuffle();
+    Shuffle monster = new Shuffle();
+    Player player = new Player(30,3);
+    Monster monster1 = new Monster(45,3,"Goblin");
+    int dmg;
+
+
+    protected override void OnInitialized()
+    {
+
+        shuffle.AddCards();
+        shuffle.shuffleDeck();
+        shuffle.DrawCards();
+        monster.AddMonsterCards();
+        monster.shuffleDeck();
+        monster.DrawCards();
+    }
+    private void endTurn()
+    {
+
+        shuffle.EndTurn();
+        player.resetEnergy();
+        dmg = monster1.playCards(monster.GetHand());
+        player.takeDamage(dmg);
+        player.resetBlock();
+        monster.EndTurn();
+    }
+
+    private void PlayCard(Cards card)
+    {
+        player.spendEnergy(card.getCoast());
+        monster1.takeDamage(card.getDmg());
+        player.addBlock(card.getBlock());
+        shuffle.PlayCard(card);
+
+    }
+
+}
+
+@foreach (var card in shuffle.GetHand())
+{
+    <div>
+        @if(!player.asEnough(card.getCoast()))
+        {
+            <button disabled>Play</button>
+        }
+        else
+        {
+            <button @onclick="() => PlayCard(card)">Play</button>
+            <p>@card.getName() - Attack: @card.getDmg() - Block: @card.getBlock() - Cost: @card.getCoast()</p>
+          
+        }
+        
+        
+    </div>
+
+}
+
+
+
+
+<div>
+    <button @onclick="endTurn">End Turn</button>
+    <p>Deck @shuffle.getDeckSize()</p>
+    <p>Graveyard @shuffle.getGraveyardSize()</p>
+    <p>Engery @player.getEnergy() / @player.getMaxEnergy()</p>
+    <p>Player Block @player.getBlock()</p>
+    <p>Player HP @player.getHp()</p>
+    <p>@monster1.getName() HP @monster1.getHp()</p>
+
+</div>
